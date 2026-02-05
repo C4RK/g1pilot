@@ -94,10 +94,14 @@ To run the docker image in the robot with the following command:
 The configuration file is located in the `config` folder. You can modify the parameters according to your needs. It's important to set up all the correct information for your robot.
 
 ### Instructions
-Once you have the docker image running, you can run the following command to start the unitree node:
-
+Once you have the docker image running, you can run the following command to start the unitree node: For this we implement a custom build command to build the packages inside the docker.
+If you want to build all the packages, you can run the following command:
 ```bash
-colcon build
+./cbuild 
+```
+If you want to build only the g1pilot package, you can run the following command:
+```bash
+./cbuild g1pilot
 ```
 
 Then, source the workspace:
@@ -105,6 +109,12 @@ Then, source the workspace:
 ```bash
 source install/setup.bash
 ```
+
+Also if you are connected to the robot, you need to source the way to connecto the robot, for example:
+
+```bash
+source setup_uri.sh <interface>
+``` 
 
 You can launch the bringup robot with the following command:
 
@@ -149,8 +159,7 @@ ros2 launch g1pilot teleoperation_launcher.launch.py
 ros2 launch realsense2_camera rs_launch.py depth_module.depth_profile:=1280x720x30 pointcloud.enable:=true
 ```
 
-## Entrypoints
-TODO
+For more details on how to use the package, please refer to the [instructions](docs/INSTRUCTIONS.md) document. Also you can check the [cheats](docs/CHEATS.md) document for quick commands and tips to use the package.
 
 ## Contributing
 We welcome contributions to **G1Pilot**! If you have suggestions, improvements, or bug fixes, please follow these steps:
