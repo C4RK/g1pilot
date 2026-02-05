@@ -39,14 +39,14 @@ class DX3Controller(Node):
             self.right_pub.Init()
             self.right_sub = ChannelSubscriber("rt/dex3/right/state", HandState_)
             self.right_sub.Init(self.right_callback)
-            self.create_subscription(PointStamped, "/right_hand/dx3/action", self.right_action_callback, 10)
+            self.create_subscription(PointStamped, "/g1pilot/right_hand/dx3/action", self.right_action_callback, 10)
 
         if arm_controlled in ["left", "both"]:
             self.left_pub = ChannelPublisher("rt/dex3/left/cmd", HandCmd_)
             self.left_pub.Init()
             self.left_sub = ChannelSubscriber("rt/dex3/left/state", HandState_)
             self.left_sub.Init(self.left_callback)
-            self.create_subscription(PointStamped, "/left_hand/dx3/action", self.left_action_callback, 10)
+            self.create_subscription(PointStamped, "/g1pilot/left_hand/dx3/action", self.left_action_callback, 10)
 
         self.create_timer(0.05, self.publish_commands)
 

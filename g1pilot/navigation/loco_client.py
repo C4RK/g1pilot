@@ -53,16 +53,6 @@ class G1LocoClient(Node):
             10
         )
 
-        self.declare_parameter('ik_use_waist', False)
-        self.declare_parameter('ik_alpha', 0.2)
-        self.declare_parameter('ik_max_dq_step', 0.05)
-        self.declare_parameter('arm_velocity_limit', 2.0)
-
-        ik_use_waist = self.get_parameter('ik_use_waist').get_parameter_value().bool_value
-        ik_alpha = float(self.get_parameter('ik_alpha').value)
-        ik_max_dq_step = float(self.get_parameter('ik_max_dq_step').value)
-        arm_vel_lim = float(self.get_parameter('arm_velocity_limit').value)
-
         if self.use_robot:
             ChannelFactoryInitialize(0, interface)
             self.robot = LocoClient()

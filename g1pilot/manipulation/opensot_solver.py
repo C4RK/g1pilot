@@ -131,10 +131,10 @@ class G1CollisionAvoidanceNode(Node):
         self.start_opensot_sub = self.create_subscription(Bool, "/g1pilot/start_opensot", self.start_opensot_callback, 10)
         self.emergency_stop_sub = self.create_subscription(Bool, "/g1pilot/emergency_stop", self.emergency_stop_callback, 10)
         self.righ_hand_subscriber = self.create_subscription(
-            PoseStamped, "/right_hand/pose_ref", self.right_hand_pose_ref_callback, 10
+            PoseStamped, "/g1pilot/right_hand/pose_ref", self.right_hand_pose_ref_callback, 10
         )
         self.left_hand_subscriber = self.create_subscription(
-            PoseStamped, "/left_hand/pose_ref", self.left_hand_pose_ref_callback, 10
+            PoseStamped, "/g1pilot/left_hand/pose_ref", self.left_hand_pose_ref_callback, 10
         )
 
         while not self.client.wait_for_service(timeout_sec=1.0):

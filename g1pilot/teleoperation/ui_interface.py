@@ -9,7 +9,7 @@ from PyQt6.QtCore import QTimer
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool
 from g1pilot.utils.window_style import DarkStyle
 from geometry_msgs.msg import PointStamped
 
@@ -63,7 +63,7 @@ class ButtonGUI(QWidget):
             (0, 1): ("START\nBALANCING", lambda: self.flash_button((0, 1), self.node.pub_start_balancing)),
             (0, 4): ("OPENSOT", lambda: self.toggle_button((0, 4), self.node.start_opensot_pub)),
 
-            (1, 0): ("HOMING\nARMS", lambda: self.flash_button((1, 0), self.node.pub_arms_home)),
+            # (1, 0): ("HOMING\nARMS", lambda: self.flash_button((1, 0), self.node.pub_arms_home)),
 
             (2, 0): ("OPEN\nLEFT\nHAND", lambda: self.toggle_hand("left", "open", self.node.pub_left_hand)),
             (2, 1): ("CLOSE\nLEFT\nHAND", lambda: self.toggle_hand("left", "close", self.node.pub_left_hand)),
