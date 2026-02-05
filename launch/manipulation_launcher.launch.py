@@ -26,8 +26,8 @@ def generate_launch_description():
 
         Node(
             package='g1pilot',
-            executable='arm_controller',
-            name='arm_controller',
+            executable='opensot_solver',
+            name='opensot_solver',
             parameters=[{
                 'interface': interface,
                 'use_robot': ParameterValue(use_robot, value_type=bool),
@@ -42,17 +42,6 @@ def generate_launch_description():
             parameters=[{
                 'arm_controlled': ParameterValue(LaunchConfiguration("arm_controlled"), value_type=str),
                 'interface': ParameterValue(LaunchConfiguration("interface"), value_type=str)
-            }],
-            output='screen'
-        ),
-
-        Node(
-            package='g1pilot',
-            executable='interactive_marker',
-            name='interactive_marker',
-            parameters=[{
-                'interface': interface,
-                'use_robot': ParameterValue(use_robot, value_type=bool),
             }],
             output='screen'
         ),

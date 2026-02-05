@@ -5,6 +5,7 @@ import rclpy
 from rclpy.qos import QoSProfile
 from rclpy.node import Node
 from std_msgs.msg import String
+from geometry_msgs.msg import PointStamped
 from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize
 from unitree_sdk2py.idl.unitree_hg.msg.dds_ import HandCmd_, HandState_
 from unitree_sdk2py.idl.default import unitree_hg_msg_dds__HandCmd_
@@ -38,30 +39,30 @@ class DX3Controller(Node):
             self.right_pub.Init()
             self.right_sub = ChannelSubscriber("rt/dex3/right/state", HandState_)
             self.right_sub.Init(self.right_callback)
-            self.create_subscription(String, "g1pilot/dx3/hand_action/right", self.right_action_callback, 10)
+            self.create_subscription(PointStamped, "/right_hand/dx3/action", self.right_action_callback, 10)
 
         if arm_controlled in ["left", "both"]:
             self.left_pub = ChannelPublisher("rt/dex3/left/cmd", HandCmd_)
             self.left_pub.Init()
             self.left_sub = ChannelSubscriber("rt/dex3/left/state", HandState_)
             self.left_sub.Init(self.left_callback)
-            self.create_subscription(String, "g1pilot/dx3/hand_action/left", self.left_action_callback, 10)
+            self.create_subscription(PointStamped, "/left_hand/dx3/action", self.left_action_callback, 10)
 
         self.create_timer(0.05, self.publish_commands)
 
-    def right_action_callback(self, msg: String):
-        if msg.data not in ["open", "close"]:
-            return
-        if msg.data != self.right_action:
-            self.right_action = msg.data
-            self.right_target = CLOSE_RIGHT_VALUES if msg.data == "close" else OPEN_VALUES
+    def right_action_callback(self, msg: PointStamped):
+        if msg.point.x > 0.5:
+            self.right_action = "close"
+        else:
+            self.right_action = "open"
+        self.right_target = CLOSE_RIGHT_VALUES if self.right_action == "close" else OPEN_VALUES
 
-    def left_action_callback(self, msg: String):
-        if msg.data not in ["open", "close"]:
-            return
-        if msg.data != self.left_action:
-            self.left_action = msg.data
-            self.left_target = CLOSE_LEFT_VALUES if msg.data == "close" else OPEN_VALUES
+    def left_action_callback(self, msg: PointStamped):
+        if msg.point.x > 0.5:
+            self.left_action = "close"
+        else:
+            self.left_action = "open"
+        self.left_target = CLOSE_LEFT_VALUES if self.left_action == "close" else OPEN_VALUES
 
     def left_callback(self, msg: HandState_):
         motor_list_msg = MotorStateList()

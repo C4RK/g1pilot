@@ -37,7 +37,7 @@ G1Pilot is an open‑source ROS 2 package for Unitree G1 humanoid robots. Basic
 |---------------------|--------------------|
 | <img src="https://github.com/hucebot/g1pilot/blob/main/images/joint_controller.gif" alt="Static Sensors" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/cartesian_controller.gif" alt="Moving Sensors" width="380"> |
 | **Path Planner & Odometry** | **Control Interface** |
-| <img src="https://github.com/hucebot/g1pilot/blob/main/images/odometry_and_pathplanner.gif" alt="Path Planner" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/control_interface.gif" alt="Control Interface" width="380">  |
+| <img src="https://github.com/hucebot/g1pilot/blob/main/images/odometry_and_pathplanner.gif" alt="Path Planner" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/fake_streamdeck.png" alt="Control Interface" width="380">  |
 
 ## Table of Contents
 - [Pre-requisites](#pre-requisites)

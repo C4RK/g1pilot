@@ -51,15 +51,4 @@ def generate_launch_description():
             }],
             output='screen'
         ),
-
-        Node(
-            package='g1pilot',
-            executable='dijkstra_planner',
-            name='dijkstra_planner',
-            parameters=[{
-                'interface': interface,
-                'use_robot': ParameterValue(use_robot, value_type=bool),
-            }],
-            output='screen'
-        ),
     ])
