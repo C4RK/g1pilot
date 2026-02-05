@@ -2,8 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](
 https://opensource.org/licenses/BSD-3-Clause)
-[![Ros Version](https://img.shields.io/badge/ROS2-Humble-green)](
-https://docs.ros.org/en/humble/index.html)
+[![Ros Version](https://img.shields.io/badge/ROS2-Jazzy-green)](
+https://docs.ros.org/en/jazzy/index.html)
 [![GitHub Stars](https://img.shields.io/github/stars/Hucebot/g1pilot?style=social)](https://github.com/Hucebot/g1pilot/stargazers)
 
 <img src="https://github.com/hucebot/g1pilot/blob/main/images/g1pilot.png" alt="G1Pilot" width="800" height="500">

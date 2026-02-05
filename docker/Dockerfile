@@ -59,7 +59,7 @@ RUN git clone -b devel https://github.com/stack-of-tasks/pinocchio.git && \
     source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_WITH_URDF_SUPPORT=ON -DBUILD_WITH_COLLISION_SUPPORT=ON -DBUILD_TESTING=FALSE -DBUILD_PYTHON_INTERFACE=OFF ../../src/pinocchio && \
-    make -j8 && \
+    make -j4 && \
     make install
 
 
