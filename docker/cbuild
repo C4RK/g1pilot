@@ -40,10 +40,10 @@ if [ "$#" -eq 0 ]; then
 
   if [ "${BUILD_LIVOX:-0}" = "1" ]; then
     clean_pkgs livox_ros_driver2
-    /home/.base/bin/python3 -m colcon build --symlink-install
+    /home/.base/bin/python3 -m colcon build --symlink-install --executor sequential
   else
     clean_pkgs livox_ros_driver2
-    /home/.base/bin/python3 -m colcon build --symlink-install --packages-skip "${DEFAULT_SKIP_PKGS[@]}"
+    /home/.base/bin/python3 -m colcon build --symlink-install --executor sequential --packages-skip "${DEFAULT_SKIP_PKGS[@]}"
   fi
 
   exit 0
@@ -52,9 +52,9 @@ fi
 if [ "$1" = "all" ]; then
   shift
   clean_pkgs unitree_api unitree_go unitree_hg unitree_sdk2py livox_ros_driver2
-  /home/.base/bin/python3 -m colcon build --symlink-install
+  /home/.base/bin/python3 -m colcon build --symlink-install --executor sequential
   exit 0
 fi
 
 clean_pkgs "$@"
- /home/.base/bin/python3 -m colcon build --symlink-install --packages-select "$@"
+ /home/.base/bin/python3 -m colcon build --symlink-install --executor sequential --packages-select "$@"

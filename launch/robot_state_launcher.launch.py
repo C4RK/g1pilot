@@ -32,7 +32,7 @@ def generate_launch_description():
                               description="Connect to real robot if true"),
         DeclareLaunchArgument("publish_joint_states", default_value="false",
                               description="Publish joint_states from node"),
-        DeclareLaunchArgument("interface", default_value="eth0",
+        DeclareLaunchArgument("interface", default_value="eno2",
                               description="Network interface for Unitree SDK"),
         DeclareLaunchArgument("sim_rate_hz", default_value="50.0",
                               description="Simulation rate when use_robot=false"),

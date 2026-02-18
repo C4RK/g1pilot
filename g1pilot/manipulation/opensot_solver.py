@@ -89,7 +89,7 @@ class G1CollisionAvoidanceNode(Node):
         self.get_logger().info("Starting G1 Collision Avoidance Node")
 
         self.declare_parameter("use_robot", True)
-        self.declare_parameter("interface", "eth0")
+        self.declare_parameter("interface", "eno2")
         self.interface = str(self.get_parameter("interface").value)
         self.use_robot = bool(self.get_parameter("use_robot").value)
 
@@ -159,7 +159,7 @@ class G1CollisionAvoidanceNode(Node):
         self.menu_handler = {}
         self.menu_entry_ids = {}
 
-        self.right_hand_frame_ref = "world"
+        self.right_hand_frame_ref = "pelvis"
         self.left_hand_frame_ref = "pelvis"
 
         self.motor_state = [MotorState() for _ in range(35)]
