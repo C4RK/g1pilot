@@ -19,6 +19,8 @@ services:
       - DISPLAY=${DISPLAY:-:0}
       - QT_X11_NO_MITSHM=0
       - ROS_DOMAIN_ID=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
@@ -27,6 +29,7 @@ services:
       - ./setup_uri.sh:/ros2_ws/setup_uri.sh
       - ./cbuild:/ros2_ws/cbuild
       - ./entrypoint.sh:/entrypoint.sh:ro
+      - ./cyclonedds.xml:/cyclonedds.xml:ro
     entrypoint: ["/bin/bash", "/entrypoint.sh"]
     healthcheck:
       test: >-

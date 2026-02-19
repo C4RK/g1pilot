@@ -3,8 +3,8 @@
 exec bash -ic '
 cd /ros2_ws &&
 ./cbuild &&
-unset RMW_IMPLEMENTATION &&
+source setup_uri.sh eno2 &&
 source install/setup.bash &&
 ros2 launch g1pilot bringup_launcher.launch.py
 '
-# source setup_uri.sh eno2 &&
+#unset RMW_IMPLEMENTATION &&
