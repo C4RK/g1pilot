@@ -21,7 +21,7 @@ OPEN_VALUES        = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 class DX3Controller(Node):
     def __init__(self):
         super().__init__('dx3_hand_controller')
-        self.declare_parameter("interface", "eno2")
+        self.declare_parameter("interface", "")
         self.declare_parameter("arm_controlled", "both")
         interface = self.get_parameter("interface").get_parameter_value().string_value
         arm_controlled = self.get_parameter("arm_controlled").get_parameter_value().string_value
