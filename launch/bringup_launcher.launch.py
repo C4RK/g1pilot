@@ -1,7 +1,8 @@
 from launch import LaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
@@ -14,6 +15,8 @@ def generate_launch_description():
 
 
     return LaunchDescription([
+        DeclareLaunchArgument("enable_collision_avoidance", default_value="true"),
+
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(navigation_launcher)
         ),
@@ -24,6 +27,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(teleoperation_launcher)
         ),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(manipulation_launcher)
+            PythonLaunchDescriptionSource(manipulation_launcher),
+            launch_arguments={
+                'enable_collision_avoidance': LaunchConfiguration('enable_collision_avoidance'),
+            }.items()
         ),
     ])

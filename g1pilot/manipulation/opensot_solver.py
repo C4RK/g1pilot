@@ -27,6 +27,7 @@ from scipy.spatial.transform import Rotation as R
 import pyopensot as pysot
 from pyopensot.tasks.velocity import Postural, Cartesian, CoM
 from pyopensot.constraints.velocity import JointLimits, VelocityLimits
+from pyopensot_collision.constraints.velocity import CollisionAvoidance
 
 from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize
 from unitree_sdk2py.idl.unitree_hg.msg.dds_ import LowCmd_, LowState_
@@ -90,8 +91,10 @@ class G1CollisionAvoidanceNode(Node):
 
         self.declare_parameter("use_robot", True)
         self.declare_parameter("interface", "eno2")
+        self.declare_parameter("enable_collision_avoidance", False)
         self.interface = str(self.get_parameter("interface").value)
         self.use_robot = bool(self.get_parameter("use_robot").value)
+        self.enable_collision_avoidance = bool(self.get_parameter("enable_collision_avoidance").value)
 
         self.control_dt = 0.005
         self.time = 0.0
@@ -501,6 +504,49 @@ class G1CollisionAvoidanceNode(Node):
         self.dqmax = self.model.getVelocityLimits()
         self.dqlims = VelocityLimits(self.model, self.dqmax, self.control_dt)
 
+        # self.collision_avoidance_constraint = None
+        # if self.enable_collision_avoidance:
+        self.get_logger().info("Constraints: Self-Collision Avoidance")
+        self.collision_avoidance_constraint = CollisionAvoidance(
+            self.model, max_pairs=50, collision_urdf=self.urdf)
+
+        # Only links with <collision> geometry in g1_29dof.urdf are usable.
+        # pelvis, left_rubber_hand, right_rubber_hand have NO collision geometry.
+        # Use pelvis_contour_link and left/right_wrist_yaw_link as end-effectors.
+        collision_list = {
+            # Left arm vs torso
+            ("left_elbow_link", "torso_link"),
+            ("left_wrist_roll_link", "torso_link"),
+            ("left_wrist_pitch_link", "torso_link"),
+            ("left_wrist_yaw_link", "torso_link"),
+            # Right arm vs torso
+            ("right_elbow_link", "torso_link"),
+            ("right_wrist_roll_link", "torso_link"),
+            ("right_wrist_pitch_link", "torso_link"),
+            ("right_wrist_yaw_link", "torso_link"),
+            # Left arm vs head
+            ("left_elbow_link", "head_link"),
+            ("left_wrist_yaw_link", "head_link"),
+            # Right arm vs head
+            ("right_elbow_link", "head_link"),
+            ("right_wrist_yaw_link", "head_link"),
+            # Left arm vs right arm
+            ("left_elbow_link", "right_elbow_link"),
+            ("left_wrist_yaw_link", "right_wrist_yaw_link"),
+            ("left_wrist_yaw_link", "right_elbow_link"),
+            ("right_wrist_yaw_link", "left_elbow_link"),
+            # Left arm vs pelvis_contour_link (has collision geometry)
+            ("left_wrist_yaw_link", "pelvis_contour_link"),
+            ("left_elbow_link", "pelvis_contour_link"),
+            # Right arm vs pelvis_contour_link
+            ("right_wrist_yaw_link", "pelvis_contour_link"),
+            ("right_elbow_link", "pelvis_contour_link"),
+        }
+
+        self.collision_avoidance_constraint.setCollisionList(collision_list)
+        self.collision_avoidance_constraint.setBoundScaling(0.1)
+        self.collision_avoidance_constraint.setLinkPairThreshold(0.05)
+        self.collision_avoidance_constraint.setDetectionThreshold(-1)
 
         # self.com_xy = self.com % [0, 1]
         # self.stack = (
@@ -510,16 +556,15 @@ class G1CollisionAvoidanceNode(Node):
         #     << self.qlims
         #     << self.dqlims
         # )
-
         self.stack = (
             self.base#%[0,1,3,4,5]
             / (self.torso % [3, 4, 5] + self.right_gripper + self.left_gripper)
-            / self.postural 
-             << self.qlims
-             << self.dqlims
+            / self.postural
+            << self.qlims
+            << self.dqlims
+            << self.collision_avoidance_constraint
         )
-
-
+            
         self.stack.update()
         self.solver = pysot.iHQP(self.stack, eps_regularisation=1e11)
 
