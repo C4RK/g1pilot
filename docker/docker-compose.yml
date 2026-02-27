@@ -1,0 +1,46 @@
+# g1pilot - Robot Control (ROS Jazzy + CycloneDDS)
+# Standalone: docker compose up
+# Combined:  included from ~/docker-compose.yml
+
+services:
+  g1pilot:
+    image: g1pilot:latest
+    container_name: g1pilot
+    stdin_open: true
+    tty: true
+    privileged: true
+    network_mode: host
+    working_dir: /ros2_ws
+    group_add:
+      - video
+    device_cgroup_rules:
+      - "c 81:* rmw"
+    env_file:
+      - env.conf
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=0
+      - ROS_DOMAIN_ID=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///cyclonedds.xml
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./..:/ros2_ws/src/g1pilot
+      - ./../config/livox_mid.json:/ros2_ws/src/livox_ros_driver2/config/MID360_config.json
+      - ./setup_uri.sh:/ros2_ws/setup_uri.sh
+      - ./cbuild:/ros2_ws/cbuild
+      - ./entrypoint.sh:/entrypoint.sh:ro
+      - ./cyclonedds.xml:/cyclonedds.xml:ro
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    healthcheck:
+      test: >-
+        bash -c '
+          source /opt/ros/jazzy/setup.bash 2>/dev/null &&
+          source /home/.base/bin/activate 2>/dev/null &&
+          source /ros2_ws/install/setup.bash 2>/dev/null &&
+          timeout 4 ros2 topic hz /base_height 2>/dev/null | grep -q "average rate"'
+      interval: 10s
+      timeout: 10s
+      retries: 10e9
+      start_period: 300s

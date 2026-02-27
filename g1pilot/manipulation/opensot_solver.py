@@ -89,7 +89,7 @@ class G1CollisionAvoidanceNode(Node):
         self.get_logger().info("Starting G1 Collision Avoidance Node")
 
         self.declare_parameter("use_robot", True)
-        self.declare_parameter("interface", "eno1")
+        self.declare_parameter("interface", "")
         self.interface = str(self.get_parameter("interface").value)
         self.use_robot = bool(self.get_parameter("use_robot").value)
 
