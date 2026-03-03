@@ -59,6 +59,17 @@ class ManualJoystick(Node):
 
     def read_joystick(self):
         BTN_TRIANGLE = evdev.ecodes.BTN_NORTH
+        BTN_SQUARE   = evdev.ecodes.BTN_WEST
+        BTN_X = evdev.ecodes.BTN_SOUTH
+        BTN_CIRCLE = evdev.ecodes.BTN_EAST
+        BTN_L1 = evdev.ecodes.BTN_TL
+        BTN_R1 = evdev.ecodes.BTN_TR
+        BTN_L2 = evdev.ecodes.BTN_TL2
+        BTN_R2 = evdev.ecodes.BTN_TR2
+        BTN_UP = evdev.ecodes.BTN_DPAD_UP
+        BTN_DOWN = evdev.ecodes.BTN_DPAD_DOWN
+        BTN_LEFT = evdev.ecodes.BTN_DPAD_LEFT
+        BTN_RIGHT = evdev.ecodes.BTN_DPAD_RIGHT
         for event in self.device.read_loop():
             with self.lock:
                 if event.type == evdev.ecodes.EV_ABS and event.code in self.axis_map:

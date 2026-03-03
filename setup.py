@@ -28,6 +28,7 @@ setup(
             'launch/manipulation_launcher.launch.py',
 
             'launch/bringup_launcher.launch.py',
+            'launch/bringup_opensot.launch.py',
         ]),
 
         # URDF / XML
@@ -64,7 +65,7 @@ setup(
             # Manipulation Nodes
             'interactive_marker = g1pilot.manipulation.interactive_marker:main',
             'dx3_controller = g1pilot.manipulation.dx3_hand:main',
-            'arm_controller = g1pilot.manipulation.arm_controller:main',
+            'opensot_solver = g1pilot.manipulation.opensot_solver:main',
 
             # Teleoperation Nodes
             'joystick = g1pilot.teleoperation.joystick:main',

@@ -6,7 +6,7 @@ import json
 import threading
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, Float64
 from sensor_msgs.msg import Joy
 
 from unitree_sdk2py.g1.loco.g1_loco_client import LocoClient
@@ -39,22 +39,19 @@ class G1LocoClient(Node):
         self.declare_parameter('use_robot', True)
         self.use_robot = bool(self.get_parameter('use_robot').value)
 
-        self.declare_parameter('interface', 'eth0')
+        self.declare_parameter('interface', '')
         interface = self.get_parameter('interface').get_parameter_value().string_value
         self.declare_parameter('arm_controlled', 'both')
         self.arm_controlled = self.get_parameter('arm_controlled').get_parameter_value().string_value
         self.declare_parameter('enable_arm_ui', True)
         self.enable_arm_ui = self.get_parameter('enable_arm_ui').get_parameter_value().bool_value
 
-        self.declare_parameter('ik_use_waist', False)
-        self.declare_parameter('ik_alpha', 0.2)
-        self.declare_parameter('ik_max_dq_step', 0.05)
-        self.declare_parameter('arm_velocity_limit', 2.0)
-
-        ik_use_waist = self.get_parameter('ik_use_waist').get_parameter_value().bool_value
-        ik_alpha = float(self.get_parameter('ik_alpha').value)
-        ik_max_dq_step = float(self.get_parameter('ik_max_dq_step').value)
-        arm_vel_lim = float(self.get_parameter('arm_velocity_limit').value)
+        self.create_subscription(
+            Float64,
+            '/base_height',
+            self.base_height_callback,
+            10
+        )
 
         if self.use_robot:
             ChannelFactoryInitialize(0, interface)
@@ -137,6 +134,10 @@ class G1LocoClient(Node):
                 self.publisher_arms_controlled.publish(Bool(data=False))
         else:
             self._clear_once("_e_stop_activated_logged")
+
+    def base_height_callback(self, msg: Float64):
+        # self.get_logger().warning(f"Received base height command: {msg.data}")
+        self.robot.SetStandHeight(msg.data)
 
     def start_callback(self, msg: Bool):
         if self.use_robot and self.robot is not None and msg.data:
@@ -224,23 +225,23 @@ class G1LocoClient(Node):
                 self._log_once("info", "Close left gripper.", "_close_left_gripper_logged")
                 self.left_gripper_pub.publish(String(data="close"))
 
-            if self._btn_rising(msg, 6):
+            if self._btn_rising(msg, 4):
                 if not self.balanced:
                     self._log_once("info", "Starting balancing procedure...", "_start_balance_r1_logged")
                     self.entering_balancing(max_height=0.5, step=0.02)
                     self._log_once("info", "Balancing procedure completed.", "_balance_completed_r1_logged")
                 else:
                     self._log_once("info", "Already balanced, no action taken.", "_already_balanced_notice_r1_logged")
-            if self._btn_falling(msg, 6):
+            if self._btn_falling(msg, 4):
                 self._clear_once("_start_balance_r1_logged")
                 self._clear_once("_balance_completed_r1_logged")
                 self._clear_once("_already_balanced_notice_r1_logged")
 
-            if msg.buttons[8] == 0 and not self.robot_stopped and self.balanced:
+            if msg.buttons[5] == 0 and not self.robot_stopped and self.balanced:
                 if self.use_robot and self.robot is not None:
                     self.robot.StopMove()
 
-            if msg.buttons[8] == 1 and not self.robot_stopped and self.balanced:
+            if msg.buttons[7] == 1 and not self.robot_stopped and self.balanced:
                 vx = round(msg.axes[1] * -0.5, 2)
                 vy = round(msg.axes[0] * -0.5, 2)
                 yaw = round(msg.axes[2] * -0.5, 2)

@@ -1,16 +1,23 @@
+#!/home/.base/bin/python3
+
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, EnvironmentVariable
 from launch_ros.parameter_descriptions import ParameterValue
 import os
+import sys
 
 package_name = "g1pilot"
-urdf_file_name = "29dof.urdf"
+urdf_file_name = "g1_29dof.urdf"
 rviz_config_file_name = "29dof.rviz"
 
 def generate_launch_description():
+    if not os.environ.get("G1_INTERFACE"):
+        sys.exit("ERROR: G1_INTERFACE environment variable is not set.\n"
+                 "Set it to your network interface, e.g.: export G1_INTERFACE=eno2")
+
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_robot = LaunchConfiguration("use_robot")
     publish_joint_states = LaunchConfiguration("publish_joint_states")
@@ -28,9 +35,9 @@ def generate_launch_description():
                               description="Use simulation (Gazebo) clock if true"),
         DeclareLaunchArgument("use_robot", default_value="true",
                               description="Connect to real robot if true"),
-        DeclareLaunchArgument("publish_joint_states", default_value="true",
+        DeclareLaunchArgument("publish_joint_states", default_value="false",
                               description="Publish joint_states from node"),
-        DeclareLaunchArgument("interface", default_value="eth0",
+        DeclareLaunchArgument("interface", default_value=EnvironmentVariable("G1_INTERFACE"),
                               description="Network interface for Unitree SDK"),
         DeclareLaunchArgument("sim_rate_hz", default_value="50.0",
                               description="Simulation rate when use_robot=false"),
@@ -69,29 +76,8 @@ def generate_launch_description():
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
-            name='d435_to_camera_link',
-            arguments=['0','0','0','0','0','0','d435_link','camera_link']
-        ),
-
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='world_to_odom_tf',
-            arguments=['0','0','0','0','0','0','world','odom_unitree']
-        ),
-
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
             name='pelvis_to_base_link_tf',
             arguments=['0','0','0','0','0','0','base_link','pelvis']
-        ),
-
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='mrbeam_to_pelvis_tf',
-            arguments=['0.0745','0.0','0.065','0','0.05236','0','waist_roll_link','mrbeam_link']
         ),
 
         Node(

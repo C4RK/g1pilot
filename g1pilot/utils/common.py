@@ -55,6 +55,11 @@ class G1_29_JointWeakIndex(IntEnum):
     kRightShoulderYaw   = 24
     kRightElbow         = 25
 
+class G1_29_JointWaistIndex(IntEnum):
+    kWaistYaw   = 12
+    kWaistRoll  = 13
+    kWaistPitch = 14
+
 class G1_29_JointIndex(IntEnum):
     # Left leg
     kLeftHipPitch   = 0

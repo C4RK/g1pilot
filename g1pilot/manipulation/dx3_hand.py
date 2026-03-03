@@ -5,19 +5,26 @@ import rclpy
 from rclpy.qos import QoSProfile
 from rclpy.node import Node
 from std_msgs.msg import String
+from geometry_msgs.msg import PointStamped
 from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize
 from unitree_sdk2py.idl.unitree_hg.msg.dds_ import HandCmd_, HandState_
 from unitree_sdk2py.idl.default import unitree_hg_msg_dds__HandCmd_
 from astroviz_interfaces.msg import MotorState, MotorStateList
 
-CLOSE_RIGHT_VALUES = [-0.10, 0.63, -1.74, 1.06, 0.95, 0.91, 1.22]
-CLOSE_LEFT_VALUES  = [0.04,  -0.04,  1.51, -1.10, -1.47, -1.13, -1.23]
-OPEN_VALUES        = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+#CLOSE_RIGHT_VALUES = [-0.10, 0.63, -1.74, 1.06, 0.95, 0.91, 1.22]
+CLOSE_RIGHT_VALUES_1 = [0.00,  0.0,  0.0, 1.2, 1.6, 0.0, 0.0] # 1 finger
+CLOSE_RIGHT_VALUES_2 = [0.00,  0.0,  0.0, 1.2, 1.6, 1.2, 1.6] # closed Hand
+CLOSE_LEFT_VALUES_1  = [0.04,  0.6,  1.4, -1.2, -1.4, -0.0, 0.0] # 1 finger
+CLOSE_LEFT_VALUES_2  = [0.04,  0.6,  1.4, -1.2, -1.6, -1.2, -1.4] # closed Hand
+# CLOSE_LEFT_VALUES  = [0.04,  -0.04,  1.51, -1.10, -1.47, -1.13, -1.23]
+# CLOSE_LEFT_VALUES  = [0.04,  0.4,  1.5, -1.10, -1.58, -1.13, -1.32] motor gripper
+
+OPEN_VALUES          = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 class DX3Controller(Node):
     def __init__(self):
         super().__init__('dx3_hand_controller')
-        self.declare_parameter("interface", "eth0")
+        self.declare_parameter("interface", "")
         self.declare_parameter("arm_controlled", "both")
         interface = self.get_parameter("interface").get_parameter_value().string_value
         arm_controlled = self.get_parameter("arm_controlled").get_parameter_value().string_value
@@ -38,30 +45,38 @@ class DX3Controller(Node):
             self.right_pub.Init()
             self.right_sub = ChannelSubscriber("rt/dex3/right/state", HandState_)
             self.right_sub.Init(self.right_callback)
-            self.create_subscription(String, "g1pilot/dx3/hand_action/right", self.right_action_callback, 10)
+            self.create_subscription(PointStamped, "/g1pilot/right_hand/dx3/action", self.right_action_callback, 10)
 
         if arm_controlled in ["left", "both"]:
             self.left_pub = ChannelPublisher("rt/dex3/left/cmd", HandCmd_)
             self.left_pub.Init()
             self.left_sub = ChannelSubscriber("rt/dex3/left/state", HandState_)
             self.left_sub.Init(self.left_callback)
-            self.create_subscription(String, "g1pilot/dx3/hand_action/left", self.left_action_callback, 10)
+            self.create_subscription(PointStamped, "/g1pilot/left_hand/dx3/action", self.left_action_callback, 10)
 
         self.create_timer(0.05, self.publish_commands)
 
-    def right_action_callback(self, msg: String):
-        if msg.data not in ["open", "close"]:
-            return
-        if msg.data != self.right_action:
-            self.right_action = msg.data
-            self.right_target = CLOSE_RIGHT_VALUES if msg.data == "close" else OPEN_VALUES
+    def right_action_callback(self, msg: PointStamped):
+        if msg.point.x < -0.5:
+            self.right_action = "close_1"
+            self.right_target = CLOSE_RIGHT_VALUES_1
+        elif msg.point.x > 0.5:
+            self.right_action = "open"
+            self.right_target = OPEN_VALUES
+        else:
+            self.right_action = "close_2"
+            self.right_target = CLOSE_RIGHT_VALUES_2
 
-    def left_action_callback(self, msg: String):
-        if msg.data not in ["open", "close"]:
-            return
-        if msg.data != self.left_action:
-            self.left_action = msg.data
-            self.left_target = CLOSE_LEFT_VALUES if msg.data == "close" else OPEN_VALUES
+    def left_action_callback(self, msg: PointStamped):
+        if msg.point.x < -0.5:
+            self.left_action = "close_1"
+            self.left_target = CLOSE_LEFT_VALUES_1
+        elif msg.point.x > 0.5:
+            self.left_action = "open"
+            self.left_target = OPEN_VALUES
+        else:
+            self.left_action = "close_2"
+            self.left_target = CLOSE_LEFT_VALUES_2
 
     def left_callback(self, msg: HandState_):
         motor_list_msg = MotorStateList()

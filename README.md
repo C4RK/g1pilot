@@ -2,8 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](
 https://opensource.org/licenses/BSD-3-Clause)
-[![Ros Version](https://img.shields.io/badge/ROS2-Humble-green)](
-https://docs.ros.org/en/humble/index.html)
+[![Ros Version](https://img.shields.io/badge/ROS2-Jazzy-green)](
+https://docs.ros.org/en/jazzy/index.html)
 [![GitHub Stars](https://img.shields.io/github/stars/Hucebot/g1pilot?style=social)](https://github.com/Hucebot/g1pilot/stargazers)
 
 <img src="https://github.com/hucebot/g1pilot/blob/main/images/g1pilot.png" alt="G1Pilot" width="800" height="500">
@@ -37,7 +37,7 @@ G1Pilot is an open‑source ROS 2 package for Unitree G1 humanoid robots. Basic
 |---------------------|--------------------|
 | <img src="https://github.com/hucebot/g1pilot/blob/main/images/joint_controller.gif" alt="Static Sensors" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/cartesian_controller.gif" alt="Moving Sensors" width="380"> |
 | **Path Planner & Odometry** | **Control Interface** |
-| <img src="https://github.com/hucebot/g1pilot/blob/main/images/odometry_and_pathplanner.gif" alt="Path Planner" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/control_interface.gif" alt="Control Interface" width="380">  |
+| <img src="https://github.com/hucebot/g1pilot/blob/main/images/odometry_and_pathplanner.gif" alt="Path Planner" width="380"> | <img src="https://github.com/hucebot/g1pilot/blob/main/images/fake_streamdeck.png" alt="Control Interface" width="380">  |
 
 ## Table of Contents
 - [Pre-requisites](#pre-requisites)
@@ -94,10 +94,14 @@ To run the docker image in the robot with the following command:
 The configuration file is located in the `config` folder. You can modify the parameters according to your needs. It's important to set up all the correct information for your robot.
 
 ### Instructions
-Once you have the docker image running, you can run the following command to start the unitree node:
-
+Once you have the docker image running, you can run the following command to start the unitree node: For this we implement a custom build command to build the packages inside the docker.
+If you want to build all the packages, you can run the following command:
 ```bash
-colcon build
+./cbuild 
+```
+If you want to build only the g1pilot package, you can run the following command:
+```bash
+./cbuild g1pilot
 ```
 
 Then, source the workspace:
@@ -105,6 +109,12 @@ Then, source the workspace:
 ```bash
 source install/setup.bash
 ```
+
+Also if you are connected to the robot, you need to source the way to connecto the robot, for example:
+
+```bash
+source setup_uri.sh <interface>
+``` 
 
 You can launch the bringup robot with the following command:
 
@@ -149,8 +159,7 @@ ros2 launch g1pilot teleoperation_launcher.launch.py
 ros2 launch realsense2_camera rs_launch.py depth_module.depth_profile:=1280x720x30 pointcloud.enable:=true
 ```
 
-## Entrypoints
-TODO
+For more details on how to use the package, please refer to the [instructions](docs/INSTRUCTIONS.md) document. Also you can check the [cheats](docs/CHEATS.md) document for quick commands and tips to use the package.
 
 ## Contributing
 We welcome contributions to **G1Pilot**! If you have suggestions, improvements, or bug fixes, please follow these steps:

@@ -9,7 +9,7 @@ def generate_launch_description():
             name='joystick',
             output='screen',
             parameters=[
-                {'joystick_name': 'Pro Controller',
+                {'joystick_name': 'Wireless Controller',
                  }],
         ),
 
