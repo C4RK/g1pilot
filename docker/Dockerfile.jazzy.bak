@@ -1,4 +1,4 @@
-FROM osrf/ros:humble-desktop
+FROM osrf/ros:jazzy-desktop
 
 SHELL ["/bin/bash", "-c"]
 
@@ -7,10 +7,10 @@ ENV TZ="Europe/Paris"
 
 WORKDIR /deps
 
-RUN apt-get update && apt-get upgrade -y && apt-get clean  && apt-get install -y terminator gedit locate cmake-curses-gui python3-pip python3-venv liburdfdom-dev ros-humble-moveit-core
+RUN apt-get update && apt-get upgrade -y && apt-get clean  && apt-get install -y terminator gedit locate cmake-curses-gui python3-pip python3-venv liburdfdom-dev ros-jazzy-moveit-core
 
 WORKDIR /home
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 
 # create forest ws and use it to clone and install CONCERT's simulation package
 WORKDIR /home/forest_ws
@@ -22,7 +22,7 @@ RUN python3 -m venv /home/.base
 RUN echo "source /home/.base/bin/activate" >> ~/.bashrc
 SHELL ["bash", "-ic"]
 
-RUN pip install --upgrade ttictoc setuptools==69.5.1 hhcm-forest jinja2 typeguard && forest init
+RUN pip install --upgrade ttictoc setuptools hhcm-forest && forest init
 RUN echo "source $PWD/setup.bash" >> ~/.bashrc
 SHELL ["bash", "-ic"]
 
@@ -42,7 +42,7 @@ RUN git clone https://github.com/humanoid-path-planner/hpp-fcl.git && \
     git submodule update && \
     mkdir -p /home/forest_ws/build/hpp-fcl && \
     cd /home/forest_ws/build/hpp-fcl && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_PYTHON_INTERFACE=OFF ../../src/hpp-fcl && \
     make -j8 && \
@@ -56,7 +56,7 @@ RUN git clone -b devel https://github.com/stack-of-tasks/pinocchio.git && \
     git submodule update && \
     mkdir -p /home/forest_ws/build/pinocchio && \
     cd /home/forest_ws/build/pinocchio && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_WITH_URDF_SUPPORT=ON -DBUILD_WITH_COLLISION_SUPPORT=ON -DBUILD_TESTING=FALSE -DBUILD_PYTHON_INTERFACE=OFF ../../src/pinocchio && \
     make -j4 && \
@@ -68,7 +68,7 @@ WORKDIR /home/forest_ws/src
 RUN git clone -b devel https://github.com/ADVRHumanoids/xbot2_interface.git && \
     mkdir -p /home/forest_ws/build/xbot2_interface && \
     cd /home/forest_ws/build/xbot2_interface && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DXBOT2_IFC_BUILD_TESTS=ON -DXBOT2_IFC_BUILD_ROS=OFF -DXBOT2_IFC_BUILD_ROS2=OFF -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release ../../src/xbot2_interface && \
     make -j8 && \
@@ -82,7 +82,7 @@ RUN git clone https://github.com/oxfordcontrol/osqp.git && \
     git submodule update && \
     mkdir -p /home/forest_ws/build/osqp && \
     cd /home/forest_ws/build/osqp && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DDLONG=OFF -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release ../../src/osqp && \
     make -j8 && \
@@ -96,7 +96,7 @@ RUN git clone https://github.com/Simple-Robotics/proxsuite.git && \
     git submodule update && \
     mkdir -p /home/forest_ws/build/proxsuite && \
     cd /home/forest_ws/build/proxsuite && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DBUILD_WITH_VECTORIZATION_SUPPORT=OFF -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release ../../src/proxsuite && \
     make -j8 && \
@@ -109,7 +109,7 @@ WORKDIR /home/forest_ws/src
 RUN git clone -b v0.6.0 https://github.com/flexible-collision-library/fcl.git && \
     mkdir -p /home/forest_ws/build/fcl && \
     cd /home/forest_ws/build/fcl && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release ../../src/fcl  && \
     make -j8 && \
@@ -136,16 +136,16 @@ RUN FCL_VERSION=0.6.1 && \
 RUN git clone https://github.com/qpSWIFT/qpSWIFT.git && \
     mkdir -p /home/forest_ws/build/qpSWIFT && \
     cd /home/forest_ws/build/qpSWIFT && \
-    source /opt/ros/humble/setup.bash && \
+    source /opt/ros/jazzy/setup.bash && \
     source /home/forest_ws/setup.bash && \
     cmake -DCMAKE_INSTALL_PREFIX:STRING=/home/forest_ws/install -DCMAKE_BUILD_TYPE:STRING=Release ../../src/qpSWIFT && \
     make -j8 && \
     make install
 
-RUN apt-get update && apt-get upgrade -y && apt-get clean  && apt-get install -y ros-humble-xacro ros-humble-joint-state-publisher-gui
+RUN apt-get update && apt-get upgrade -y && apt-get clean  && apt-get install -y ros-jazzy-xacro ros-jazzy-joint-state-publisher-gui
 
 WORKDIR /home
-RUN echo "export PYTHONPATH=${PYTHONPATH}:/root/.local/lib/python3.10/site-packages:/usr/lib/python3/dist-packages/" >> ~/.bashrc
+RUN echo "export PYTHONPATH=${PYTHONPATH}:/root/.local/lib/python3.12/site-packages:/usr/lib/python3/dist-packages/" >> ~/.bashrc
 
 WORKDIR /home/ros2_ws/src
 RUN git clone https://github.com/frankarobotics/franka_description.git
@@ -153,7 +153,7 @@ RUN git clone -b ros2 https://github.com/EnricoMingo/LittleDog.git
 WORKDIR /home/ros2_ws
 
 ### HURo Stuff
-ENV ROS_DISTRO=humble
+ENV ROS_DISTRO=jazzy
 ENV DISPLAY=:0
 ENV LIBGL_ALWAYS_INDIRECT=0
 
@@ -282,7 +282,7 @@ RUN cat >> /root/.bashrc <<'EOF'
 
 # Load ROS + venv + overlays
 rosenv() {
-  source /opt/ros/humble/setup.bash
+  source /opt/ros/jazzy/setup.bash
   source /home/.base/bin/activate
   [ -f /home/forest_ws/install/local_setup.bash ] && source /home/forest_ws/install/local_setup.bash
   [ -f /ros2_ws/install/setup.bash ] && source /ros2_ws/install/setup.bash
@@ -407,7 +407,7 @@ RUN python3 -m pip install --no-cache-dir -U pip setuptools wheel && \
 RUN /home/.base/bin/pip install --no-cache-dir cyclonedds
 
 ENV CRC_SRC=/unitree_sdk2_python/unitree_sdk2py/utils/lib/crc_amd64.so
-ENV CRC_DST=/unitree_sdk2py/lib/python3.10/site-packages/unitree_sdk2py/utils/lib
+ENV CRC_DST=/unitree_sdk2py/lib/python3.12/site-packages/unitree_sdk2py/utils/lib
 
 RUN set -eux; \
     mkdir -p "$CRC_DST"; \
