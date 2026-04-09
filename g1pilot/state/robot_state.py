@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#从 Unitree 官方的底层数据格式（DDS/LowState）中提取信息，
+#并将其转化为标准的 ROS 2 消息，好让 RViz、控制器和你的算法能看懂。
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
@@ -17,6 +19,7 @@ from unitree_sdk2py.idl.unitree_hg.msg.dds_ import LowState_
 
 
 class G1JointIndex:
+    #unitree发过来的数据是一个数组，代码通过这个字典将关节和电机对应起来。
     LeftHipPitch = 0
     LeftHipRoll = 1
     LeftHipYaw = 2
@@ -49,6 +52,7 @@ class G1JointIndex:
 
 
 _joint_index_to_ros_name = {
+    #将数字变成字符串。RViz加载的URDF模型就是通过字符串来移动对应零件的
     G1JointIndex.LeftHipPitch: "left_hip_pitch_joint",
     G1JointIndex.LeftHipRoll: "left_hip_roll_joint",
     G1JointIndex.LeftHipYaw: "left_hip_yaw_joint",
@@ -84,85 +88,89 @@ _joint_index_to_ros_name = {
 class RobotState(Node):
     def __init__(self):
         super().__init__('robot_state')
-
-        self.declare_parameter('use_robot', True)
-        self.declare_parameter('interface', '')
-        self.declare_parameter('publish_joint_states', True)
+        #参数声明与读取
+        self.declare_parameter('use_robot', True)#True连网线，False本地模拟
+        self.declare_parameter('interface', '')#告诉底层SDK该从哪个网卡发数据包
+        self.declare_parameter('publish_joint_states', True)#控制是否发布/joint_states话题
 
         self.use_robot = bool(self.get_parameter('use_robot').value)
         interface = self.get_parameter('interface').get_parameter_value().string_value
         self.publish_joint_states = bool(self.get_parameter('publish_joint_states').value)
-        self.ns = '/g1pilot'
+        self.ns = '/g1pilot'#命名空间
 
-        qos_profile = QoSProfile(depth=10)
-        self.joint_pub = self.create_publisher(JointState, "/joint_states", qos_profile)
-        self.imu_pub = self.create_publisher(Imu, f"{self.ns}/imu", qos_profile)
-        self.motor_state_pub = self.create_publisher(MotorStateList, f"{self.ns}/motor_state", qos_profile)
-        self.tf_broadcaster = TransformBroadcaster(self)
+        #定义发布者Quality of Service
+        qos_profile = QoSProfile(depth=10)#深度为10,如果数据发布得太快，系统会缓存最后十条
+        self.joint_pub = self.create_publisher(JointState, "/joint_states", qos_profile)#关节角度
+        self.imu_pub = self.create_publisher(Imu, f"{self.ns}/imu", qos_profile)#身体平衡姿态
+        self.motor_state_pub = self.create_publisher(MotorStateList, f"{self.ns}/motor_state", qos_profile)#自定义消息
+        self.tf_broadcaster = TransformBroadcaster(self)#负责广播坐标变换。实时广播
 
-        self.joint_indices = sorted(_joint_index_to_ros_name.keys())
-        self.joint_names = [_joint_index_to_ros_name[i] for i in self.joint_indices]
-        self.joint_state_msg = JointState()
+        #数据结构的准备
+        self.joint_indices = sorted(_joint_index_to_ros_name.keys())#数字排序
+        self.joint_names = [_joint_index_to_ros_name[i] for i in self.joint_indices]#字符串列表
+        self.joint_state_msg = JointState()#预填消息体
         self.joint_state_msg.name = self.joint_names
 
         if self.use_robot:
-            ChannelFactoryInitialize(0, interface)
-            self.subscriber_low_state = ChannelSubscriber("rt/lowstate", LowState_)
-            self.subscriber_low_state.Init(self.callback_lowstate)
+            #真机模式
+            ChannelFactoryInitialize(0, interface)#初始化Unitree底层通信
+            self.subscriber_low_state = ChannelSubscriber("rt/lowstate", LowState_)# 订阅机器人发出的原始信号
+            self.subscriber_low_state.Init(self.callback_lowstate)# 一旦有信号，就去执行 callback_lowstate 逻辑
         else:
-            self.create_timer(0.05, self._sim_tick)
+            #模拟模式
+            self.create_timer(0.05, self._sim_tick)# 创建一个 20Hz (1/0.05) 的定时器，周期性调用模拟函数
 
-    def callback_lowstate(self, msg: LowState_):
+    def callback_lowstate(self, msg: LowState_):#网线发回一次数据包LowState，这个函数就跳动一次
         now = self.get_clock().now().to_msg()
 
-        imu_msg = Imu()
+        imu_msg = Imu()#标准消息格式
         imu_msg.header = Header()
         imu_msg.header.stamp = now
         imu_msg.header.frame_id = "pelvis"
-        imu_msg.orientation.w = float(msg.imu_state.quaternion[0])
+        imu_msg.orientation.w = float(msg.imu_state.quaternion[0])#四元数
         imu_msg.orientation.x = float(msg.imu_state.quaternion[1])
         imu_msg.orientation.y = float(msg.imu_state.quaternion[2])
         imu_msg.orientation.z = float(msg.imu_state.quaternion[3])
-        imu_msg.angular_velocity.x = float(msg.imu_state.gyroscope[0])
+        imu_msg.angular_velocity.x = float(msg.imu_state.gyroscope[0])#角速度
         imu_msg.angular_velocity.y = float(msg.imu_state.gyroscope[1])
         imu_msg.angular_velocity.z = float(msg.imu_state.gyroscope[2])
-        imu_msg.linear_acceleration.x = float(msg.imu_state.accelerometer[0])
+        imu_msg.linear_acceleration.x = float(msg.imu_state.accelerometer[0])#加速度
         imu_msg.linear_acceleration.y = float(msg.imu_state.accelerometer[1])
         imu_msg.linear_acceleration.z = float(msg.imu_state.accelerometer[2])
         self.imu_pub.publish(imu_msg)
 
         # TF pelvis -> imu_link
-        t = TransformStamped()
+        t = TransformStamped()#声明一个空的表
         t.header.stamp = now
-        t.header.frame_id = "pelvis"
-        t.child_frame_id = "imu_link"
-        t.transform.translation.x = 0.0
+        t.header.frame_id = "pelvis"#父节点，参考基准，盆骨
+        t.child_frame_id = "imu_link"#子节点，安装在盆骨上的IMU传感器
+        t.transform.translation.x = 0.0#位移偏置
         t.transform.translation.y = 0.0
         t.transform.translation.z = 0.0
-        t.transform.rotation = imu_msg.orientation
-        self.tf_broadcaster.sendTransform(t)
+        t.transform.rotation = imu_msg.orientation#直接把从原始数据里提取出来的四元数赋给了这个变换。
+        self.tf_broadcaster.sendTransform(t)#节点向系统广播
 
         # Motor states
-        positions = []
-        motor_list_msg = MotorStateList()
-        for idx in self.joint_indices:
-            if idx < len(msg.motor_state):
-                m = msg.motor_state[idx]
-                motor_state = MotorState()
+        positions = []#第一个空箱。装每个电机的姿态
+        motor_list_msg = MotorStateList()#第二个空箱。装每个电机的自定义数据，包括温度和电压等
+        for idx in self.joint_indices:#按照顺序挨个来
+            if idx < len(msg.motor_state):#检查硬件发来的数据结构长度是否正常
+                m = msg.motor_state[idx]#拿出第idx电机的原始数据
+                motor_state = MotorState()#为这个电机创建一张新的表单
                 motor_state.name = _joint_index_to_ros_name[idx]
                 motor_state.temperature = float(m.temperature[0] if hasattr(m.temperature, "__len__") else m.temperature)
                 motor_state.voltage = float(m.vol)
                 motor_state.position = float(m.q)
                 motor_state.velocity = float(m.dq)
-                motor_list_msg.motor_list.append(motor_state)
-                positions.append(float(m.q))
+                motor_list_msg.motor_list.append(motor_state)#将数据填进
+                positions.append(float(m.q))#将数据填进
 
-        self.motor_state_pub.publish(motor_list_msg)
+        self.motor_state_pub.publish(motor_list_msg)#发布电机状态
 
-        if self.publish_joint_states:
+        if self.publish_joint_states:#如果发布
             self.joint_state_msg.header.stamp = now
             self.joint_state_msg.position = positions
-            self.joint_pub.publish(self.joint_state_msg)
+            self.joint_pub.publish(self.joint_state_msg)#发布关节而不是电机
 
     def _sim_tick(self):
         now = self.get_clock().now().to_msg()
@@ -176,15 +184,15 @@ class RobotState(Node):
             js = JointState()
             js.header.stamp = now
             js.name = self.joint_names
-            js.position = [0.0] * len(js.name)
-            self.joint_pub.publish(js)
+            js.position = [0.0] * len(js.name)#生成29个0的列表
+            self.joint_pub.publish(js)#发布，告诉RViz，所有29个电机处于0度位置
 
 
 def main(args=None):
-    rclpy.init(args=args)
-    node = RobotState()
+    rclpy.init(args=args)#启动底层引擎，初始化ROS2的通信环境
+    node = RobotState()#实例化RobotState类
     try:
-        rclpy.spin(node)
+        rclpy.spin(node)#进入死循环，让节点保持活跃
     except KeyboardInterrupt:
         pass
     finally:
